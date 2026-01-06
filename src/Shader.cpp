@@ -1,5 +1,9 @@
 #include "../include/Shader.h"
 
+#include <filesystem>
+#include <iostream>
+#include <direct.h> // Windows об
+
 Shader::Shader() {}
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
@@ -31,7 +35,11 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
         fragmentString = fragmentStream.str();
     }
     catch (std::ifstream::failure e) {
-        std::cout << "ERROR: SHADER FILE WAS UNSUCCESSFULLY READ" << std::endl;
+        std::cerr << "ERROR: SHADER FILE WAS UNSUCCESSFULLY READ" << std::endl;
+        std::cerr << "Vertex Shader Path: " << vertexPath << std::endl;
+        std::cerr << "Fragment Shader Path: " << fragmentPath << std::endl;
+        //std::cerr << "Current working directory: " << std::filesystem::current_path().string() << std::endl;
+        std::cerr << "Current working directory: " << _getcwd(NULL, 0) << std::endl;
         exit(-1);
     }
 
