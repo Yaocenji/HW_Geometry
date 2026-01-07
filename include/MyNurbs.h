@@ -14,132 +14,27 @@ namespace MyNurbs {
     namespace Utils {
 
         // 辅助函数：计算组合数 C(n, k)
-        int Binomial(int n, int k) {
-            if (k < 0 || k > n) {
-                return 0;
-            }
-            if (k == 0 || k == n) {
-                return 1;
-            }
-            if (k > n / 2) {
-                k = n - k;
-            }
-
-            long result = 1;
-            for (int i = 1; i <= k; ++i) {
-                result = result * (n - i + 1) / i;
-            }
-            return (int)result;
-        }
-
+        int Binomial(int n, int k);
 
         // 定义矩阵类型，简单的 vector<vector<double>>
         using Matrix = std::vector<std::vector<double>>;
         using Vector = std::vector<double>;
+
         // 打印矩阵辅助函数（调试用）
-        void printMatrix(const Matrix& A) {
-            for (const auto& row : A) {
-                for (double val : row) printf("%.4f ", val);
-                printf("\n");
-            }
-        }
+        void printMatrix(const Matrix& A);
+
         // 核心：高斯消元法求解 Ax = B
         // 带有列主元选择（Partial Pivoting），防止除以0，提高数值稳定性
-        Vector solveLinearSystem(Matrix A, Vector B) {
-            int n = A.size();
-            if (n == 0) return {};
-            assert(A[0].size() == n && B.size() == n); // 确保是方阵
-
-            // 消元过程
-            for (int i = 0; i < n; i++) {
-                // 列主元选择
-                int pivot = i;
-                for (int j = i + 1; j < n; j++) {
-                    if (std::abs(A[j][i]) > std::abs(A[pivot][i])) {
-                        pivot = j;
-                    }
-                }
-                // 交换行
-                std::swap(A[i], A[pivot]);
-                std::swap(B[i], B[pivot]);
-
-                if (std::abs(A[i][i]) < 1e-9) {
-                    std::cerr << "Error: Matrix is singular or nearly singular!" << std::endl;
-                    return {}; // 矩阵奇异，无解或无穷多解
-                }
-
-                // 消元
-                for (int j = i + 1; j < n; j++) {
-                    double factor = A[j][i] / A[i][i];
-                    B[j] -= factor * B[i];
-                    for (int k = i; k < n; k++) {
-                        A[j][k] -= factor * A[i][k];
-                    }
-                }
-            }
-
-            // 2. 回代过程 (Back Substitution)
-            Vector x(n);
-            for (int i = n - 1; i >= 0; i--) {
-                double sum = 0;
-                for (int j = i + 1; j < n; j++) {
-                    sum += A[i][j] * x[j];
-                }
-                x[i] = (B[i] - sum) / A[i][i];
-            }
-
-            return x;
-        }
-
+        Vector solveLinearSystem(Matrix A, Vector B);
 
         // 矩阵转置
-        Matrix transpose(const Matrix& A) {
-            if (A.empty()) return {};
-            int rows = A.size();
-            int cols = A[0].size();
-            Matrix AT(cols, Vector(rows));
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < cols; j++) {
-                    AT[j][i] = A[i][j];
-                }
-            }
-            return AT;
-        }
+        Matrix transpose(const Matrix& A);
 
         // 矩阵乘法 C = A * B
-        Matrix multiply(const Matrix& A, const Matrix& B) {
-            if (A.empty() || B.empty()) return {};
-            int r1 = A.size();
-            int c1 = A[0].size();
-            int r2 = B.size();
-            int c2 = B[0].size();
-            assert(c1 == r2);
-
-            Matrix C(r1, Vector(c2, 0.0));
-            for (int i = 0; i < r1; i++) {
-                for (int k = 0; k < c1; k++) {
-                    if (std::abs(A[i][k]) < 1e-9) continue; // 简单的稀疏优化
-                    for (int j = 0; j < c2; j++) {
-                        C[i][j] += A[i][k] * B[k][j];
-                    }
-                }
-            }
-            return C;
-        }
+        Matrix multiply(const Matrix& A, const Matrix& B);
 
         // 矩阵乘以向量 v_out = A * v_in
-        Vector multiplyMV(const Matrix& A, const Vector& v) {
-            int rows = A.size();
-            int cols = A[0].size();
-            assert(cols == v.size());
-            Vector res(rows, 0.0);
-            for (int i = 0; i < rows; ++i) {
-                for (int j = 0; j < cols; ++j) {
-                    res[i] += A[i][j] * v[j];
-                }
-            }
-            return res;
-        }
+        Vector multiplyMV(const Matrix& A, const Vector& v);
     }
 
 	class RationalCurve {
@@ -206,6 +101,20 @@ namespace MyNurbs {
         /// <returns>返回一个数组，第0个是点坐标，第1个是一阶导，第2个是二阶导...</returns>
         std::vector<glm::dvec3> Derivatives(double u, int d);
 
+        /// <summary>
+        /// 求拉伸能量
+        /// </summary>
+        /// <param name="step">步长</param>
+        /// <returns></returns>
+        double stretchEnergy(int step = 4096);
+
+        /// <summary>
+        /// 求弯曲能量
+        /// </summary>
+        /// <param name="step">步长</param>
+        /// <returns></returns>
+        double bendingEnergy(int step = 4096);
+
         // 析构函数 (建议加上)
         ~RationalCurve() = default;
 
@@ -218,6 +127,46 @@ namespace MyNurbs {
         /// <param name="curve"></param>
         /// <returns></returns>
         static bool InterpolateUniform(
+            int degree,
+            const std::vector<glm::dvec3>& points,
+            RationalCurve*& curve
+        );
+
+        /// <summary>
+        /// 弦长参数化插值
+        /// </summary>
+        /// <param name="degree"></param>
+        /// <param name="points"></param>
+        /// <param name="curve"></param>
+        /// <returns></returns>
+        static bool InterpolateChordLength(
+            int degree,
+            const std::vector<glm::dvec3>& points,
+            RationalCurve*& curve
+        );
+
+        /// <summary>
+        /// 向心参数化插值
+        /// </summary>
+        /// <param name="degree"></param>
+        /// <param name="points"></param>
+        /// <param name="curve"></param>
+        /// <returns></returns>
+        static bool InterpolateCentripetal(
+            int degree,
+            const std::vector<glm::dvec3>& points,
+            RationalCurve*& curve
+        );
+
+
+        /// <summary>
+        /// 通用参数化插值
+        /// </summary>
+        /// <param name="degree"></param>
+        /// <param name="points"></param>
+        /// <param name="curve"></param>
+        /// <returns></returns>
+        static bool InterpolateUniversal(
             int degree,
             const std::vector<glm::dvec3>& points,
             RationalCurve*& curve
@@ -240,7 +189,7 @@ namespace MyNurbs {
         /// 递归计算 B-Spline 基函数 N_{i,p}(u)
         /// </summary>
         /// <param name="u">参数值</param>
-        /// <param name="i">节点索引</param>
+        /// <param name="i">控制点索引</param>
         /// <param name="p">当前阶数</param>
         /// <returns>基函数的值</returns>
         double BasicCoxdeBoor(double u, int i, int p);

@@ -33,20 +33,20 @@ int main() {
 
     crv.weights = { 0.2, 0.3, 0.4 , 1, 0.5, 0.6, 0.7, 0.8 };
 
-    MyNurbs::RationalCurve* mycrv = nullptr;
-    MyNurbs::RationalCurve::Create(crv.degree, crv.control_points, crv.knots, crv.weights, mycrv);
-    for (int i = 0; i < 20; i++) {
-        auto point = mycrv->Evaluate(i * 0.05);
-        std::cout << "u=" << i * 0.05 << "  Point: " << point.x << ", " << point.y << ", " << point.z << ", " << std::endl;
-    }
+    //MyNurbs::RationalCurve* mycrv = nullptr;
+    //MyNurbs::RationalCurve::Create(crv.degree, crv.control_points, crv.knots, crv.weights, mycrv);
+    //for (int i = 0; i < 20; i++) {
+    //    auto point = mycrv->Evaluate(i * 0.05);
+    //    std::cout << "u=" << i * 0.05 << "  Point: " << point.x << ", " << point.y << ", " << point.z << ", " << std::endl;
+    //}
 
-    // 求直到2阶导数 (点, 速度, 加速度)
-    int derivOrder = 2;
-    std::vector<glm::dvec3> derivs = mycrv->Derivatives(0.5, derivOrder);
+    //// 求直到2阶导数 (点, 速度, 加速度)
+    //int derivOrder = 2;
+    //std::vector<glm::dvec3> derivs = mycrv->Derivatives(0.5, derivOrder);
 
-    std::cout << "Position: " << derivs[0].x << ", " << derivs[0].y << ", " << derivs[0].z << std::endl;
-    std::cout << "Velocity: " << derivs[1].x << ", " << derivs[1].y << ", " << derivs[1].z << std::endl;
-    std::cout << "Accel   : " << derivs[2].x << ", " << derivs[2].y << ", " << derivs[2].z << std::endl;
+    //std::cout << "Position: " << derivs[0].x << ", " << derivs[0].y << ", " << derivs[0].z << std::endl;
+    //std::cout << "Velocity: " << derivs[1].x << ", " << derivs[1].y << ", " << derivs[1].z << std::endl;
+    //std::cout << "Accel   : " << derivs[2].x << ", " << derivs[2].y << ", " << derivs[2].z << std::endl;
 
 
     tinynurbs::RationalCurve<double> crv1; // Planar curve using float32
@@ -105,13 +105,77 @@ int main() {
     MyNurbs::RationalCurve* mycrv5 = nullptr;
     MyNurbs::RationalCurve::Create(crv5.degree, crv5.control_points, crv5.knots, crv5.weights, mycrv5);
 
+    vector<glm::dvec3> testPoints = {
+        glm::fvec3(0,0,5),
+        glm::fvec3(0,3,4),
+        glm::fvec3(0,4,3),
+        glm::fvec3(0,4.5,6),
+        glm::fvec3(0,5,2),
+        glm::fvec3(0,13,6),
+        glm::fvec3(0,14,1),
+        glm::fvec3(0,14.5,5)
+    };
+
+    MyNurbs::RationalCurve* testInterpolateCurve[4] = {nullptr, nullptr, nullptr, nullptr};
+
+    MyNurbs::RationalCurve::Interpolate(
+        MyNurbs::RationalCurve::InterpolateMethod::Uniform,
+        3,
+        testPoints,
+        testInterpolateCurve[0]);
+
+    for (int i = 0; i < testPoints.size(); i++) {
+        testPoints[i].x += 2;
+    }
+    MyNurbs::RationalCurve::Interpolate(
+        MyNurbs::RationalCurve::InterpolateMethod::ChordLength,
+        3,
+        testPoints,
+        testInterpolateCurve[1]);
+
+    for (int i = 0; i < testPoints.size(); i++) {
+        testPoints[i].x += 1;
+    }
+    MyNurbs::RationalCurve::Interpolate(
+        MyNurbs::RationalCurve::InterpolateMethod::Centripetal,
+        3,
+        testPoints,
+        testInterpolateCurve[2]);
+
+
+    for (int i = 0; i < testPoints.size(); i++) {
+        testPoints[i].x += 1;
+    }
+    MyNurbs::RationalCurve::Interpolate(
+        MyNurbs::RationalCurve::InterpolateMethod::Universal,
+        3,
+        testPoints,
+        testInterpolateCurve[3]);
+        
     vector<MyNurbs::RationalCurve> MyCurves;
     // curves.push_back(crv);
-    MyCurves.push_back(*mycrv1);
-    MyCurves.push_back(*mycrv2);
-    MyCurves.push_back(*mycrv3);
-    MyCurves.push_back(*mycrv4);
-    MyCurves.push_back(*mycrv5);
+
+    //MyCurves.push_back(*mycrv1);
+    //MyCurves.push_back(*mycrv2);
+    //MyCurves.push_back(*mycrv3);
+    //MyCurves.push_back(*mycrv4);
+    //MyCurves.push_back(*mycrv5);
+
+
+    MyCurves.push_back(*testInterpolateCurve[0]);
+    MyCurves.push_back(*testInterpolateCurve[1]);
+    MyCurves.push_back(*testInterpolateCurve[2]);
+    MyCurves.push_back(*testInterpolateCurve[3]);
+    string name[4] = {"Uniform", "Chord Length", "Centripetal", "Universal"};
+    double stretchEnergy[4];
+    double bendingEnergy[4];
+
+    for (int i = 0; i < 4; i++) {
+        stretchEnergy[i] = testInterpolateCurve[i]->stretchEnergy();
+        bendingEnergy[i] = testInterpolateCurve[i]->bendingEnergy();
+        cout << name[i] << " stretch energy " << stretchEnergy[i] << "  bending energy " << bendingEnergy[i] << endl;
+    }
+
 
 
     tinynurbs::RationalSurface<double> srf;

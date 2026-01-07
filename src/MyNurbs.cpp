@@ -3,6 +3,133 @@
 
 namespace MyNurbs {
 
+    namespace Utils {
+        // 辅助函数：计算组合数 C(n, k)
+        int Binomial(int n, int k) {
+            if (k < 0 || k > n) {
+                return 0;
+            }
+            if (k == 0 || k == n) {
+                return 1;
+            }
+            if (k > n / 2) {
+                k = n - k;
+            }
+
+            long result = 1;
+            for (int i = 1; i <= k; ++i) {
+                result = result * (n - i + 1) / i;
+            }
+            return (int)result;
+        }
+
+        // 打印矩阵辅助函数（调试用）
+        void printMatrix(const Matrix& A) {
+            for (const auto& row : A) {
+                for (double val : row) printf("%.4f ", val);
+                printf("\n");
+            }
+        }
+        // 核心：高斯消元法求解 Ax = B
+        // 带有列主元选择（Partial Pivoting），防止除以0，提高数值稳定性
+        Vector solveLinearSystem(Matrix A, Vector B) {
+            int n = A.size();
+            if (n == 0) return {};
+            assert(A[0].size() == n && B.size() == n); // 确保是方阵
+
+            // 消元过程
+            for (int i = 0; i < n; i++) {
+                // 列主元选择
+                int pivot = i;
+                for (int j = i + 1; j < n; j++) {
+                    if (std::abs(A[j][i]) > std::abs(A[pivot][i])) {
+                        pivot = j;
+                    }
+                }
+                // 交换行
+                std::swap(A[i], A[pivot]);
+                std::swap(B[i], B[pivot]);
+
+                if (std::abs(A[i][i]) < 1e-9) {
+                    std::cerr << "Error: Matrix is singular or nearly singular!" << std::endl;
+                    return {}; // 矩阵奇异，无解或无穷多解
+                }
+
+                // 消元
+                for (int j = i + 1; j < n; j++) {
+                    double factor = A[j][i] / A[i][i];
+                    B[j] -= factor * B[i];
+                    for (int k = i; k < n; k++) {
+                        A[j][k] -= factor * A[i][k];
+                    }
+                }
+            }
+
+            // 2. 回代过程 (Back Substitution)
+            Vector x(n);
+            for (int i = n - 1; i >= 0; i--) {
+                double sum = 0;
+                for (int j = i + 1; j < n; j++) {
+                    sum += A[i][j] * x[j];
+                }
+                x[i] = (B[i] - sum) / A[i][i];
+            }
+
+            return x;
+        }
+
+
+        // 矩阵转置
+        Matrix transpose(const Matrix& A) {
+            if (A.empty()) return {};
+            int rows = A.size();
+            int cols = A[0].size();
+            Matrix AT(cols, Vector(rows));
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    AT[j][i] = A[i][j];
+                }
+            }
+            return AT;
+        }
+
+        // 矩阵乘法 C = A * B
+        Matrix multiply(const Matrix& A, const Matrix& B) {
+            if (A.empty() || B.empty()) return {};
+            int r1 = A.size();
+            int c1 = A[0].size();
+            int r2 = B.size();
+            int c2 = B[0].size();
+            assert(c1 == r2);
+
+            Matrix C(r1, Vector(c2, 0.0));
+            for (int i = 0; i < r1; i++) {
+                for (int k = 0; k < c1; k++) {
+                    if (std::abs(A[i][k]) < 1e-9) continue; // 简单的稀疏优化
+                    for (int j = 0; j < c2; j++) {
+                        C[i][j] += A[i][k] * B[k][j];
+                    }
+                }
+            }
+            return C;
+        }
+
+        // 矩阵乘以向量 v_out = A * v_in
+        Vector multiplyMV(const Matrix& A, const Vector& v) {
+            int rows = A.size();
+            int cols = A[0].size();
+            assert(cols == v.size());
+            Vector res(rows, 0.0);
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < cols; ++j) {
+                    res[i] += A[i][j] * v[j];
+                }
+            }
+            return res;
+        }
+    }
+
+
     bool RationalCurve::Interpolate(
         InterpolateMethod method,
         int degree,
@@ -24,6 +151,15 @@ namespace MyNurbs {
         if (method == InterpolateMethod::Uniform) {
             return InterpolateUniform(degree, points, curve);
         }
+        else if (method == InterpolateMethod::ChordLength) {
+            return InterpolateChordLength(degree, points, curve);
+        }
+        else if (method == InterpolateMethod::Centripetal) {
+            return InterpolateCentripetal(degree, points, curve);
+        }
+        else if (method == InterpolateMethod::Universal) {
+            return InterpolateUniversal(degree, points, curve);
+        }
     }
 
     bool RationalCurve::InterpolateUniform(
@@ -37,8 +173,277 @@ namespace MyNurbs {
         std::vector<double> parameters;
         parameters.resize(n);
         for (int i = 0; i < n; i++) {
-            parameters[i] = (double)i / ((double)1 / (double)(n - 1));
+            parameters[i] = (double)i / (double)(n - 1);
+            if (i == n - 1)
+                parameters[i] -= 1e-8; // 防止最后一个参数等于1.0，避免基函数计算问题
         }
+
+        // 平均地 构造节点向量
+        std::vector<double> knots;
+        knots.resize(n + degree + 1);
+        for (int i = 0; i < knots.size(); i++) {
+            if (i < degree + 1) {
+                knots[i] = 0.0;
+            }
+            else if (i > n - 1) {
+                knots[i] = 1.0;
+            }
+            else {
+                // knots[i] = (double)(i - degree) / (double)(n - degree);
+
+                int j = i - degree;
+                double sum = 0.0;
+                // 对参数进行滑动窗口求和
+                for (int i = j; i < j + degree; i++) {
+                    sum += parameters[i];
+                }
+                knots[j + degree] = sum / degree;
+            }
+        }
+
+        // 构造权重向量
+        std::vector<double> weights;
+        weights.resize(n, 1);
+
+        // 先创建对象，再修改控制点
+        curve = new RationalCurve(degree, std::vector<glm::dvec3>(n), knots, weights);
+
+        // 线性方程组：A * P = Q
+        // 构建矩阵
+        Utils::Matrix A(n, Utils::Vector(n, 0.0));
+        for (int i = 0; i < n; i++) {
+             double u = parameters[i];
+             for (int j = 0; j < n; j++) {
+                 A[i][j] = curve->BasicCoxdeBoor(u, j, degree);
+             }
+        }
+        // 构建插值点向量
+        Utils::Vector Qx(n, 0), Qy(n, 0), Qz(n, 0);
+        for (int i = 0; i < n; i++) {
+            Qx[i] = points[i].x;
+            Qy[i] = points[i].y;
+            Qz[i] = points[i].z;
+        }
+        // 求解线性方程组
+        Utils::Vector Px = Utils::solveLinearSystem(A, Qx);
+        Utils::Vector Py = Utils::solveLinearSystem(A, Qy);
+        Utils::Vector Pz = Utils::solveLinearSystem(A, Qz);
+
+        // 安全检查，防止 Crash
+        if (Px.empty() || Py.empty() || Pz.empty()) {
+            printf_s("Failed to solve linear system (Singular Matrix).\n");
+            delete curve;
+            curve = nullptr;
+            return false;
+        }
+
+        // 写回控制点
+        for (int i = 0; i < n; i++) {
+            curve->control_points[i] = glm::dvec3(Px[i], Py[i], Pz[i]) ;
+        }
+
+        return true;
+    }
+
+
+    bool RationalCurve::InterpolateChordLength(
+        int degree,
+        const std::vector<glm::dvec3>& points,
+        RationalCurve*& curve
+    ) {
+        int n = points.size();
+
+        // 依据弦长 构造每个插值点的参数向量
+        std::vector<double> parameters;
+        parameters.resize(n);
+        // 计算弦长数组
+        std::vector<double> chordLength;
+        chordLength.resize(n);
+        chordLength[0] = 0;
+        for (int i = 1; i < n; i++) {
+            chordLength[i] = glm::length(points[i] - points[i - 1]);
+        }
+        // 计算前缀和
+        for (size_t i = 1; i < n; i++) {
+            chordLength[i] = chordLength[i] + chordLength[i - 1];
+        }
+        // 分配参数
+        for (int i = 0; i < n; i++) {
+            parameters[i] = chordLength[i] / chordLength[n - 1];
+            if (i == n - 1)
+                parameters[i] -= 1e-8; // 防止最后一个参数等于1.0，避免基函数计算问题
+        }
+
+        // 平均地 构造节点向量
+        std::vector<double> knots;
+        knots.resize(n + degree + 1);
+        for (int i = 0; i < knots.size(); i++) {
+            if (i < degree + 1) {
+                knots[i] = 0.0;
+            }
+            else if (i > n - 1) {
+                knots[i] = 1.0;
+            }
+            else {
+                // knots[i] = (double)(i - degree) / (double)(n - degree);
+
+                int j = i - degree;
+                double sum = 0.0;
+                // 对参数进行滑动窗口求和
+                for (int i = j; i < j + degree; i++) {
+                    sum += parameters[i];
+                }
+                knots[j + degree] = sum / degree;
+            }
+        }
+
+        // 构造权重向量
+        std::vector<double> weights;
+        weights.resize(n, 1);
+
+        // 先创建对象，再修改控制点
+        curve = new RationalCurve(degree, std::vector<glm::dvec3>(n), knots, weights);
+
+        // 线性方程组：A * P = Q
+        // 构建矩阵
+        Utils::Matrix A(n, Utils::Vector(n, 0.0));
+        for (int i = 0; i < n; i++) {
+            double u = parameters[i];
+            for (int j = 0; j < n; j++) {
+                A[i][j] = curve->BasicCoxdeBoor(u, j, degree);
+            }
+        }
+        // 构建插值点向量
+        Utils::Vector Qx(n, 0), Qy(n, 0), Qz(n, 0);
+        for (int i = 0; i < n; i++) {
+            Qx[i] = points[i].x;
+            Qy[i] = points[i].y;
+            Qz[i] = points[i].z;
+        }
+        // 求解线性方程组
+        Utils::Vector Px = Utils::solveLinearSystem(A, Qx);
+        Utils::Vector Py = Utils::solveLinearSystem(A, Qy);
+        Utils::Vector Pz = Utils::solveLinearSystem(A, Qz);
+
+        // 安全检查，防止 Crash
+        if (Px.empty() || Py.empty() || Pz.empty()) {
+            printf_s("Failed to solve linear system (Singular Matrix).\n");
+            delete curve;
+            curve = nullptr;
+            return false;
+        }
+
+        // 写回控制点
+        for (int i = 0; i < n; i++) {
+            curve->control_points[i] = glm::dvec3(Px[i], Py[i], Pz[i]);
+        }
+
+        return true;
+    }
+
+
+    bool RationalCurve::InterpolateCentripetal(
+        int degree,
+        const std::vector<glm::dvec3>& points,
+        RationalCurve*& curve
+    ) {
+        int n = points.size();
+
+        // 依据弦长 构造每个插值点的参数向量
+        std::vector<double> parameters;
+        parameters.resize(n);
+        // 计算向心长度数组
+        std::vector<double> centripetalLength;
+        centripetalLength.resize(n);
+        centripetalLength[0] = 0;
+        for (int i = 1; i < n; i++) {
+            centripetalLength[i] = glm::sqrt(glm::length(points[i] - points[i - 1]));
+        }
+        // 计算前缀和
+        for (size_t i = 1; i < n; i++) {
+            centripetalLength[i] = centripetalLength[i] + centripetalLength[i - 1];
+        }
+        // 分配参数
+        for (int i = 0; i < n; i++) {
+            parameters[i] = centripetalLength[i] / centripetalLength[n - 1];
+            if (i == n - 1)
+                parameters[i] -= 1e-8; // 防止最后一个参数等于1.0，避免基函数计算问题
+        }
+
+        // 平均地 构造节点向量
+        std::vector<double> knots;
+        knots.resize(n + degree + 1);
+        for (int i = 0; i < knots.size(); i++) {
+            if (i < degree + 1) {
+                knots[i] = 0.0;
+            }
+            else if (i > n - 1) {
+                knots[i] = 1.0;
+            }
+            else {
+                // knots[i] = (double)(i - degree) / (double)(n - degree);
+
+                int j = i - degree;
+                double sum = 0.0;
+                // 对参数进行滑动窗口求和
+                for (int i = j; i < j + degree; i++) {
+                    sum += parameters[i];
+                }
+                knots[j + degree] = sum / degree;
+            }
+        }
+
+        // 构造权重向量
+        std::vector<double> weights;
+        weights.resize(n, 1);
+
+        // 先创建对象，再修改控制点
+        curve = new RationalCurve(degree, std::vector<glm::dvec3>(n), knots, weights);
+
+        // 线性方程组：A * P = Q
+        // 构建矩阵
+        Utils::Matrix A(n, Utils::Vector(n, 0.0));
+        for (int i = 0; i < n; i++) {
+            double u = parameters[i];
+            for (int j = 0; j < n; j++) {
+                A[i][j] = curve->BasicCoxdeBoor(u, j, degree);
+            }
+        }
+        // 构建插值点向量
+        Utils::Vector Qx(n, 0), Qy(n, 0), Qz(n, 0);
+        for (int i = 0; i < n; i++) {
+            Qx[i] = points[i].x;
+            Qy[i] = points[i].y;
+            Qz[i] = points[i].z;
+        }
+        // 求解线性方程组
+        Utils::Vector Px = Utils::solveLinearSystem(A, Qx);
+        Utils::Vector Py = Utils::solveLinearSystem(A, Qy);
+        Utils::Vector Pz = Utils::solveLinearSystem(A, Qz);
+
+        // 安全检查，防止 Crash
+        if (Px.empty() || Py.empty() || Pz.empty()) {
+            printf_s("Failed to solve linear system (Singular Matrix).\n");
+            delete curve;
+            curve = nullptr;
+            return false;
+        }
+
+        // 写回控制点
+        for (int i = 0; i < n; i++) {
+            curve->control_points[i] = glm::dvec3(Px[i], Py[i], Pz[i]);
+        }
+
+        return true;
+    }
+
+
+    bool RationalCurve::InterpolateUniversal(
+        int degree,
+        const std::vector<glm::dvec3>& points,
+        RationalCurve*& curve
+    ) {
+        int n = points.size();
 
         // 均匀地 构造节点向量
         std::vector<double> knots;
@@ -55,8 +460,68 @@ namespace MyNurbs {
             }
         }
 
+        // 求节点向量前缀和
+        std::vector<double> knotPrefixSum;
+        knotPrefixSum.resize(knots.size() - 1);
+        knotPrefixSum[0] = knots[0];
+        for (int i = 1; i < knotPrefixSum.size(); i++) {
+            knotPrefixSum[i] = knotPrefixSum[i - 1] + knots[i];
+        }
+
+        // 依据节点向量 构造每个插值点的参数向量
+        // 第i个插值点的参数 u_i = (knots[i + 1] + knots[i+1] + ... + knots[i+degree]) / degree
+        std::vector<double> parameters;
+        parameters.resize(n);
+        for (int i = 0; i < n; i++) {
+            parameters[i] = (knotPrefixSum[i + degree] - knotPrefixSum[i]) / (double)degree;
+            if (i == n - 1)
+                parameters[i] -= 1e-8; // 防止最后一个参数等于1.0，避免基函数计算问题
+        }
+
+        // 构造权重向量
+        std::vector<double> weights;
+        weights.resize(n, 1);
+
+        // 先创建对象，再修改控制点
+        curve = new RationalCurve(degree, std::vector<glm::dvec3>(n), knots, weights);
+
+        // 线性方程组：A * P = Q
+        // 构建矩阵
+        Utils::Matrix A(n, Utils::Vector(n, 0.0));
+        for (int i = 0; i < n; i++) {
+            double u = parameters[i];
+            for (int j = 0; j < n; j++) {
+                A[i][j] = curve->BasicCoxdeBoor(u, j, degree);
+            }
+        }
+        // 构建插值点向量
+        Utils::Vector Qx(n, 0), Qy(n, 0), Qz(n, 0);
+        for (int i = 0; i < n; i++) {
+            Qx[i] = points[i].x;
+            Qy[i] = points[i].y;
+            Qz[i] = points[i].z;
+        }
+        // 求解线性方程组
+        Utils::Vector Px = Utils::solveLinearSystem(A, Qx);
+        Utils::Vector Py = Utils::solveLinearSystem(A, Qy);
+        Utils::Vector Pz = Utils::solveLinearSystem(A, Qz);
+
+        // 安全检查，防止 Crash
+        if (Px.empty() || Py.empty() || Pz.empty()) {
+            printf_s("Failed to solve linear system (Singular Matrix).\n");
+            delete curve;
+            curve = nullptr;
+            return false;
+        }
+
+        // 写回控制点
+        for (int i = 0; i < n; i++) {
+            curve->control_points[i] = glm::dvec3(Px[i], Py[i], Pz[i]);
+        }
+
         return true;
     }
+
 
     bool RationalCurve::Create(int deg,
 		const std::vector<glm::dvec3>& ctrl_pts,
@@ -272,7 +737,71 @@ namespace MyNurbs {
         return CK;
     }
 
+    
+    double RationalCurve::stretchEnergy(int step) {
+        double energy = 0.0;
+        double tMin = knots[0];
+        double tMax = knots[weights.size() - 1] - 1e-8;
+        double tStart = tMin;
+        double tEnd = 0;
+        for (int i = 0; i < step; i++) {
+            // 重新计算 tEnd
+            tEnd = tMin + (tMax - tMin) * (double)(i + 1) / (double)step;
 
+            double dt = tEnd - tStart;
+
+            glm::dvec3 derStart = Derivatives(tStart, 1)[1];
+            glm::dvec3 derEnd = Derivatives(tEnd, 1)[1];
+
+            double eStart =
+                derStart.x * derStart.x +
+                derStart.y * derStart.y +
+                derStart.z * derStart.z;
+            double eEnd =
+                derEnd.x * derEnd.x +
+                derEnd.y * derEnd.y +
+                derEnd.z * derEnd.z;
+
+            energy += 0.5 * (eStart + eEnd) * dt;
+
+            // 下一循环的 tStart 就是本次的 tEnd
+            tStart = tEnd;
+        }
+        return energy;
+    }
+
+    
+    double RationalCurve::bendingEnergy(int step) {
+        double energy = 0.0;
+        double tMin = knots[0];
+        double tMax = knots[weights.size() - 1] - 1e-8;
+        double tStart = tMin;
+        double tEnd = 0;
+        for (int i = 0; i < step; i++) {
+            // 重新计算 tEnd
+            tEnd = tMin + (tMax - tMin) * (double)(i + 1) / (double)step;
+
+            double dt = tEnd - tStart;
+
+            glm::dvec3 derStart = Derivatives(tStart, 2)[2];
+            glm::dvec3 derEnd = Derivatives(tEnd, 2)[2];
+
+            double eStart =
+                derStart.x * derStart.x +
+                derStart.y * derStart.y +
+                derStart.z * derStart.z;
+            double eEnd =
+                derEnd.x * derEnd.x +
+                derEnd.y * derEnd.y +
+                derEnd.z * derEnd.z;
+
+            energy += 0.5 * (eStart + eEnd) * dt;
+
+            // 下一循环的 tStart 就是本次的 tEnd
+            tStart = tEnd;
+        }
+        return energy;
+    }
 
 
     // -----------------------------------------------------------------------
