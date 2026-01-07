@@ -1,4 +1,5 @@
 #include "../include/GLProgram.h"
+#include "MyNurbs.h"
 #include <string>
 
 #define WINDOW_WIDTH 1600
@@ -32,6 +33,20 @@ int main() {
 
     crv.weights = { 0.2, 0.3, 0.4 , 1, 0.5, 0.6, 0.7, 0.8 };
 
+    MyNurbs::RationalCurve* mycrv = nullptr;
+    MyNurbs::RationalCurve::Create(crv.degree, crv.control_points, crv.knots, crv.weights, mycrv);
+    for (int i = 0; i < 20; i++) {
+        auto point = mycrv->Evaluate(i * 0.05);
+        std::cout << "u=" << i * 0.05 << "  Point: " << point.x << ", " << point.y << ", " << point.z << ", " << std::endl;
+    }
+
+    // 求直到2阶导数 (点, 速度, 加速度)
+    int derivOrder = 2;
+    std::vector<glm::dvec3> derivs = mycrv->Derivatives(0.5, derivOrder);
+
+    std::cout << "Position: " << derivs[0].x << ", " << derivs[0].y << ", " << derivs[0].z << std::endl;
+    std::cout << "Velocity: " << derivs[1].x << ", " << derivs[1].y << ", " << derivs[1].z << std::endl;
+    std::cout << "Accel   : " << derivs[2].x << ", " << derivs[2].y << ", " << derivs[2].z << std::endl;
 
 
     tinynurbs::RationalCurve<double> crv1; // Planar curve using float32
@@ -65,13 +80,38 @@ int main() {
     crv5.weights = { 1, 1, 1 , 1, 1, 1, 1, 1 };
 
 
-    vector<tinynurbs::RationalCurve<double>> curves;
-   // curves.push_back(crv);
-    curves.push_back(crv1);
-    curves.push_back(crv2);
-    curves.push_back(crv3);
-    curves.push_back(crv4);
-    curves.push_back(crv5);
+   // vector<tinynurbs::RationalCurve<double>> curves;
+   //// curves.push_back(crv);
+   // curves.push_back(crv1);
+   // curves.push_back(crv2);
+   // curves.push_back(crv3);
+   // curves.push_back(crv4);
+   // curves.push_back(crv5);
+
+
+
+    MyNurbs::RationalCurve* mycrv1 = nullptr;
+    MyNurbs::RationalCurve::Create(crv1.degree, crv1.control_points, crv1.knots, crv1.weights, mycrv1);
+
+    MyNurbs::RationalCurve* mycrv2 = nullptr;
+    MyNurbs::RationalCurve::Create(crv2.degree, crv2.control_points, crv2.knots, crv2.weights, mycrv2);
+
+    MyNurbs::RationalCurve* mycrv3 = nullptr;
+    MyNurbs::RationalCurve::Create(crv3.degree, crv3.control_points, crv3.knots, crv3.weights, mycrv3);
+
+    MyNurbs::RationalCurve* mycrv4 = nullptr;
+    MyNurbs::RationalCurve::Create(crv4.degree, crv4.control_points, crv4.knots, crv4.weights, mycrv4);
+
+    MyNurbs::RationalCurve* mycrv5 = nullptr;
+    MyNurbs::RationalCurve::Create(crv5.degree, crv5.control_points, crv5.knots, crv5.weights, mycrv5);
+
+    vector<MyNurbs::RationalCurve> MyCurves;
+    // curves.push_back(crv);
+    MyCurves.push_back(*mycrv1);
+    MyCurves.push_back(*mycrv2);
+    MyCurves.push_back(*mycrv3);
+    MyCurves.push_back(*mycrv4);
+    MyCurves.push_back(*mycrv5);
 
 
     tinynurbs::RationalSurface<double> srf;
@@ -162,6 +202,35 @@ int main() {
 
 
 
+    MyNurbs::RationalSurface* mysrf3 = nullptr;
+    MyNurbs::RationalSurface::Create(srf3.degree_u, srf3.degree_v,
+        {
+        glm::fvec3(0,0,5),glm::fvec3(2,0,5),glm::fvec3(3,0,5),glm::fvec3(5,0,5),glm::fvec3(8,0,5),
+        glm::fvec3(0,3,5),glm::fvec3(2,3,4),glm::fvec3(3,3,3),glm::fvec3(5,3,4),glm::fvec3(8,3,5),
+        glm::fvec3(0,4,5),glm::fvec3(2,4,3),glm::fvec3(3,4,1),glm::fvec3(5,4,3),glm::fvec3(8,4,5),
+        glm::fvec3(0,5,5),glm::fvec3(2,5,4),glm::fvec3(3,5,4),glm::fvec3(5,5,3),glm::fvec3(8,5,5),
+        glm::fvec3(0,7,5),glm::fvec3(2,7,6),glm::fvec3(3,7,7),glm::fvec3(5,7,2),glm::fvec3(8,7,5),
+        glm::fvec3(0,11,5),glm::fvec3(2,11,5),glm::fvec3(3,11,9),glm::fvec3(5,11,3),glm::fvec3(8,11,5),
+        glm::fvec3(0,13,5),glm::fvec3(2,13,3),glm::fvec3(3,13,7),glm::fvec3(5,13,4),glm::fvec3(8,13,5),
+        glm::fvec3(0,15,5),glm::fvec3(2,15,5),glm::fvec3(3,15,5),glm::fvec3(5,15,5),glm::fvec3(8,15,5)
+        },
+        srf3.knots_u,
+        srf3.knots_v,
+        {
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1
+        },
+        mysrf3);
+    
+
+
+
     if (!tinynurbs::surfaceIsValid(srf3)) {
 
         std::cout << "test";
@@ -173,9 +242,14 @@ int main() {
     surfaces.push_back(srf3);
 
 
-    program.init(curves, surfaces);
+    vector<MyNurbs::RationalSurface> MySurfaces;
+    MySurfaces.push_back(*mysrf3);
+
+
+    //program.init(curves, surfaces);
+    program.init(MyCurves, MySurfaces);
     program.setClearColor(0.05f, 0.18f, 0.25f, 1.0f);
-    program.run(curves, surfaces);
+    program.run(MyCurves, MySurfaces);
     program.cleanup();
     return 0;
 }

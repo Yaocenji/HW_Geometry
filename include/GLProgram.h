@@ -19,6 +19,8 @@
 #include "MeshRender.h"
 #include "NormalRender.h"
 
+#include "MyNurbs.h"
+
 
 
 
@@ -39,17 +41,17 @@ class GLProgram {
 
 
 
-        vector<CurveRender> curveRender;  //ÇúÏßµÄrender
-        vector<CurveRender> curveControlPointLineRender; //ÇúÏßµÄ¿ØÖÆµãÁ¬Ïß
-        vector<NormalRender> curveDerivateRender;  //ÇúÏßµÄµ¼ÊıÑÓÉìÏß
+        vector<CurveRender> curveRender;  //æ›²çº¿çš„render
+        vector<CurveRender> curveControlPointLineRender; //æ›²çº¿çš„æ§åˆ¶ç‚¹è¿çº¿
+        vector<NormalRender> curveDerivateRender;  //æ›²çº¿çš„å¯¼æ•°å»¶ä¼¸çº¿
 
         
-        vector<SurfaceRender> surfaceRender; //ÇúÃæµÄrender
-        vector<MeshRender> meshRender; // ÇúÃæµÄµÈ²ÎÊıÏßÍø¸ñ
-        vector<MeshRender> surfaceControlRender;//ÇúÃæµÄ¿ØÖÆµãÍø¸ñ
-        vector<NormalRender> normalRender;  //ÇúÃæµÄ·¨Ïò
-        vector<NormalRender> UsurfaceDerivateRender; //ÇúÃæÄ³Ò»µãµ¼ÊıU·½ÏòµÄÑÓÉìÏß
-        vector<NormalRender> VsurfaceDerivateRender; //ÇúÃæÄ³Ò»µãµ¼ÊıV·½ÏòµÄÑÓÉìÏß
+        vector<SurfaceRender> surfaceRender; //æ›²é¢çš„render
+        vector<MeshRender> meshRender; // æ›²é¢çš„ç­‰å‚æ•°çº¿ç½‘æ ¼
+        vector<MeshRender> surfaceControlRender;//æ›²é¢çš„æ§åˆ¶ç‚¹ç½‘æ ¼
+        vector<NormalRender> normalRender;  //æ›²é¢çš„æ³•å‘
+        vector<NormalRender> UsurfaceDerivateRender; //æ›²é¢æŸä¸€ç‚¹å¯¼æ•°Uæ–¹å‘çš„å»¶ä¼¸çº¿
+        vector<NormalRender> VsurfaceDerivateRender; //æ›²é¢æŸä¸€ç‚¹å¯¼æ•°Væ–¹å‘çš„å»¶ä¼¸çº¿
 
 
 
@@ -57,7 +59,7 @@ class GLProgram {
     public:
 
         // input
-        bool enableControl = true; //ÏŞÖÆÊó±êÒÆ¶¯
+        bool enableControl = true; //é™åˆ¶é¼ æ ‡ç§»åŠ¨
 
         static int windowWidth, windowHeight;
         static Camera camera;
@@ -73,6 +75,9 @@ class GLProgram {
         void init(vector<tinynurbs::RationalCurve<double>> curves, vector<tinynurbs::RationalSurface<double>> surfaces);
         void run(vector<tinynurbs::RationalCurve<double>> curves, vector<tinynurbs::RationalSurface<double>> surfaces);
         void cleanup(void);
+
+        void init(vector<MyNurbs::RationalCurve> curves, vector<MyNurbs::RationalSurface> surfaces);
+        void run(vector<MyNurbs::RationalCurve> curves, vector<MyNurbs::RationalSurface> surfaces);
 
         void setClearColor(float r, float g, float b, float alpha);
 

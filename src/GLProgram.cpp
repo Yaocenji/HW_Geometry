@@ -21,9 +21,9 @@ const char* blueFragmentShaderPath = "../shaders/blueFragmentShader.fs";
 
 const char* lightvertexShaderPath = "../shaders/lightvertexShader.vs";
 const char* fragmentShaderPath = "../shaders/fragmentShader.fs";
-//const char* imguiFontPath = "../imgui/misc/fonts/DroidSans.ttf";  //×ÖÌåÂ·¾¶
+//const char* imguiFontPath = "../imgui/misc/fonts/DroidSans.ttf";  //å­—ä½“è·¯å¾„
 
-const char* imguiFontPath = "../imgui/misc/fonts/DroidSans.ttf";  //×ÖÌåÂ·¾¶
+const char* imguiFontPath = "../imgui/misc/fonts/DroidSans.ttf";  //å­—ä½“è·¯å¾„
 
 GLProgram::GLProgram() :
     deltaTime(0.0f), prevTime(0.0f) {
@@ -107,15 +107,15 @@ void GLProgram::init(vector<tinynurbs::RationalCurve<double>> curves, vector<tin
                 glm::vec3 tmp = tinynurbs::surfacePoint(surfaces[k], u, v);
                 glm::vec3 tmp1 = tinynurbs::surfaceNormal(surfaces[k], u, v);
 
-                double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ÓÃÀ´µ¥Î»»¯µÄ
+                double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
 
                 tmp1.x = tmp1.x / length;
                 tmp1.y = tmp1.y / length;
                 tmp1.z = tmp1.z / length;
             
-                glm::vec3 tmp2; //±£´æÑÓÉìºóµÄÊı¾İµã
+                glm::vec3 tmp2; //ä¿å­˜å»¶ä¼¸åçš„æ•°æ®ç‚¹
 
-                double len = 0.2; //ÓÃÀ´ÑÓÉìµÄ
+                double len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
                 tmp2.x = tmp.x - tmp1.x * len;
                 tmp2.y = tmp.y - tmp1.y * len;
                 tmp2.z = tmp.z - tmp1.z * len;
@@ -163,13 +163,13 @@ void GLProgram::init(vector<tinynurbs::RationalCurve<double>> curves, vector<tin
 
         tinynurbs::array2<glm::vec<3,double>> res = tinynurbs::surfaceDerivatives(surfaces[k], 1, up, vp);
 
-        glm::vec3 tmp1 = res(1, 0);  //u·½Ïòµ¼Êı
-        double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ÓÃÀ´µ¥Î»»¯µÄ
+        glm::vec3 tmp1 = res(1, 0);  //uæ–¹å‘å¯¼æ•°
+        double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
         tmp1.x = tmp1.x / length;
         tmp1.y = tmp1.y / length;
         tmp1.z = tmp1.z / length;
-        glm::vec3 tmp2; //±£´æÑÓÉìºóµÄÊı¾İµã
-        double len = 0.2; //ÓÃÀ´ÑÓÉìµÄ
+        glm::vec3 tmp2; //ä¿å­˜å»¶ä¼¸åçš„æ•°æ®ç‚¹
+        double len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
         tmp2.x = tmp.x - tmp1.x * len;
         tmp2.y = tmp.y - tmp1.y * len;
         tmp2.z = tmp.z - tmp1.z * len;
@@ -178,12 +178,12 @@ void GLProgram::init(vector<tinynurbs::RationalCurve<double>> curves, vector<tin
 
         this->UsurfaceDerivateRender[k].Initial(vertexShaderPath, blueFragmentShaderPath, Vertices, OffsetVertex);
 
-        tmp1 = res(0, 1);  //v·½Ïòµ¼Êı
-        length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ÓÃÀ´µ¥Î»»¯µÄ
+        tmp1 = res(0, 1);  //væ–¹å‘å¯¼æ•°
+        length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
         tmp1.x = tmp1.x / length;
         tmp1.y = tmp1.y / length;
         tmp1.z = tmp1.z / length;
-        len = 0.2; //ÓÃÀ´ÑÓÉìµÄ
+        len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
         tmp2.x = tmp.x - tmp1.x * len;
         tmp2.y = tmp.y - tmp1.y * len;
         tmp2.z = tmp.z - tmp1.z * len;
@@ -193,11 +193,11 @@ void GLProgram::init(vector<tinynurbs::RationalCurve<double>> curves, vector<tin
 
 
         tmp1 = tinynurbs::surfaceNormal(surfaces[k], up, vp);
-        length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ÓÃÀ´µ¥Î»»¯µÄ
+        length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
         tmp1.x = tmp1.x / length;
         tmp1.y = tmp1.y / length;
         tmp1.z = tmp1.z / length;
-        len = 0.2; //ÓÃÀ´ÑÓÉìµÄ
+        len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
         tmp2.x = tmp.x + tmp1.x * len;
         tmp2.y = tmp.y + tmp1.y * len;
         tmp2.z = tmp.z + tmp1.z * len;
@@ -246,13 +246,13 @@ void GLProgram::init(vector<tinynurbs::RationalCurve<double>> curves, vector<tin
 
         std::vector<glm::dvec3> derivateData = tinynurbs::curveDerivatives(curves[k], 1, p);
 
-        glm::vec3 tmp1 = derivateData[1];  //ÇúÏßÒ»µãµÄµ¼ÊıÔËËã½á¹û
-        double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ÓÃÀ´µ¥Î»»¯µÄ
+        glm::vec3 tmp1 = derivateData[1];  //æ›²çº¿ä¸€ç‚¹çš„å¯¼æ•°è¿ç®—ç»“æœ
+        double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
         tmp1.x = tmp1.x / length;
         tmp1.y = tmp1.y / length;
         tmp1.z = tmp1.z / length;
-        glm::vec3 tmp2; //±£´æÑÓÉìºóµÄÊı¾İµã
-        double len = 1; //ÓÃÀ´ÑÓÉìµÄ
+        glm::vec3 tmp2; //ä¿å­˜å»¶ä¼¸åçš„æ•°æ®ç‚¹
+        double len = 1; //ç”¨æ¥å»¶ä¼¸çš„
         tmp2.x = tmp.x - tmp1.x * len;
         tmp2.y = tmp.y - tmp1.y * len;
         tmp2.z = tmp.z - tmp1.z * len;
@@ -387,12 +387,12 @@ void GLProgram::run(vector<tinynurbs::RationalCurve<double>> curves, vector<tiny
             tinynurbs::array2<glm::vec<3, double>> res = tinynurbs::surfaceDerivatives(surfaces[k], 1, up, vp);
 
             glm::vec3 tmp1 = res(1, 0);
-            double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ÓÃÀ´µ¥Î»»¯µÄ
+            double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
             tmp1.x = tmp1.x / length;
             tmp1.y = tmp1.y / length;
             tmp1.z = tmp1.z / length;
-            glm::vec3 tmp2; //±£´æÑÓÉìºóµÄÊı¾İµã
-            double len = 0.2; //ÓÃÀ´ÑÓÉìµÄ
+            glm::vec3 tmp2; //ä¿å­˜å»¶ä¼¸åçš„æ•°æ®ç‚¹
+            double len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
             tmp2.x = tmp.x - tmp1.x * len;
             tmp2.y = tmp.y - tmp1.y * len;
             tmp2.z = tmp.z - tmp1.z * len;
@@ -400,11 +400,11 @@ void GLProgram::run(vector<tinynurbs::RationalCurve<double>> curves, vector<tiny
             OffsetVertex[0][0] = tmp2;
             this->UsurfaceDerivateRender[k].Initial(vertexShaderPath, blueFragmentShaderPath, Vertices, OffsetVertex);
             tmp1 = res(0, 1);
-            length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ÓÃÀ´µ¥Î»»¯µÄ
+            length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
             tmp1.x = tmp1.x / length;
             tmp1.y = tmp1.y / length;
             tmp1.z = tmp1.z / length;
-            len = 0.2; //ÓÃÀ´ÑÓÉìµÄ
+            len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
             tmp2.x = tmp.x - tmp1.x * len;
             tmp2.y = tmp.y - tmp1.y * len;
             tmp2.z = tmp.z - tmp1.z * len;
@@ -417,11 +417,11 @@ void GLProgram::run(vector<tinynurbs::RationalCurve<double>> curves, vector<tiny
             }
 
             tmp1 = tinynurbs::surfaceNormal(surfaces[k], up, vp);
-            length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ÓÃÀ´µ¥Î»»¯µÄ
+            length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
             tmp1.x = tmp1.x / length;
             tmp1.y = tmp1.y / length;
             tmp1.z = tmp1.z / length;
-            len = 0.2; //ÓÃÀ´ÑÓÉìµÄ
+            len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
             tmp2.x = tmp.x + tmp1.x * len;
             tmp2.y = tmp.y + tmp1.y * len;
             tmp2.z = tmp.z + tmp1.z * len;
@@ -454,15 +454,15 @@ void GLProgram::run(vector<tinynurbs::RationalCurve<double>> curves, vector<tiny
                 std::vector<glm::dvec3> derivateData = tinynurbs::curveDerivatives(curves[k], 1, p);
                 glm::vec3 tmp1 = derivateData[1];
 
-                double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ÓÃÀ´µ¥Î»»¯µÄ
+                double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
 
                 tmp1.x = tmp1.x / length;
                 tmp1.y = tmp1.y / length;
                 tmp1.z = tmp1.z / length;
 
-                glm::vec3 tmp2; //±£´æÑÓÉìºóµÄÊı¾İµã
+                glm::vec3 tmp2; //ä¿å­˜å»¶ä¼¸åçš„æ•°æ®ç‚¹
 
-                double len = 1; //ÓÃÀ´ÑÓÉìµÄ
+                double len = 1; //ç”¨æ¥å»¶ä¼¸çš„
                 tmp2.x = tmp.x - tmp1.x * len;
                 tmp2.y = tmp.y - tmp1.y * len;
                 tmp2.z = tmp.z - tmp1.z * len;
@@ -497,6 +497,475 @@ void GLProgram::run(vector<tinynurbs::RationalCurve<double>> curves, vector<tiny
         glfwPollEvents();
     }
 }
+
+
+void GLProgram::init(vector<MyNurbs::RationalCurve> curves, vector<MyNurbs::RationalSurface> surfaces) {
+
+    // lighting
+    lightPos = glm::vec3(10.f, 4.0f, 10.0f);
+
+    // initialize window system
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
+
+    this->window = glfwCreateWindow(this->windowWidth, this->windowHeight, "3D Surface Plotter", NULL, NULL);
+    if (this->window == NULL) {
+        std::cout << "FAILED TO CREATE GLFW WINDOW" << std::endl;
+        glfwTerminate();
+        exit(-1);
+    }
+
+    glfwSetWindowUserPointer(window, this);
+
+    glfwMakeContextCurrent(this->window);
+    glfwSetFramebufferSizeCallback(this->window, _framebufferSizeCallback);
+    glfwSetScrollCallback(window, _scrollCallback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR);
+    glfwSetMouseButtonCallback(window, _mouseButtonCallback);
+    glfwSetCursorPosCallback(window, _cursorPosCallback);
+
+    // initialize GLAD before making OpenGL calls
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cout << "FAILED TO INITIALIZE GLAD" << std::endl;
+        exit(-1);
+    }
+
+    // GL calls
+    glViewport(0, 0, this->windowWidth, this->windowHeight);
+    glEnable(GL_DEPTH_TEST);
+
+    this->surfaceRender.resize(surfaces.size());
+
+    this->meshRender.resize(surfaceRender.size());
+
+    this->normalRender.resize(surfaceRender.size());
+
+    this->surfaceControlRender.resize(surfaceRender.size());
+
+    this->UsurfaceDerivateRender.resize(surfaceRender.size());
+    this->VsurfaceDerivateRender.resize(surfaceRender.size());
+
+    for (int k = 0; k < this->surfaceRender.size(); k++) {
+        double u, v, delta;
+        u = 0;
+        v = 0;
+        int numX = 40;
+        int numY = 40;
+        vector<vector<glm::vec3>> Vertices;
+        vector<vector<glm::vec3>> Normal;
+        vector<vector<glm::vec3>> OffsetVertex;
+
+        Normal.resize(numX);
+        Vertices.resize(numX);
+        OffsetVertex.resize(numX);
+        delta = 1.0 / (numX - 1);
+        for (int x = 0; x < numX; x++) {
+            v = 0;
+            Vertices[x].resize(numY);
+            OffsetVertex[x].resize(numY);
+            Normal[x].resize(numY);
+            for (int y = 0; y < numY; y++) {
+                // add vertex
+                glm::vec3 tmp = surfaces[k].Evaluate(u, v);
+                glm::vec3 tmp1 = surfaces[k].GetNormal(u, v);
+
+                double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
+
+                tmp1.x = tmp1.x / length;
+                tmp1.y = tmp1.y / length;
+                tmp1.z = tmp1.z / length;
+
+                glm::vec3 tmp2; //ä¿å­˜å»¶ä¼¸åçš„æ•°æ®ç‚¹
+
+                double len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
+                tmp2.x = tmp.x - tmp1.x * len;
+                tmp2.y = tmp.y - tmp1.y * len;
+                tmp2.z = tmp.z - tmp1.z * len;
+
+                Vertices[x][y] = tmp;
+                OffsetVertex[x][y] = tmp2;
+                Normal[x][y] = tmp1;
+                v += delta;
+            }
+            u += delta;
+        }
+        this->surfaceRender[k].Initial(lightvertexShaderPath, fragmentShaderPath, Vertices, Normal);
+
+        this->meshRender[k].Initial(vertexShaderPath, whiteFragmentShaderPath, Vertices);
+
+        vector<vector<glm::vec3>> MeshVertex;
+
+        // å¤–å±‚ resize ä¸º U çš„æ•°é‡ == Rows
+        MeshVertex.resize(surfaces[k].count_u);
+
+        for (int i = 0; i < surfaces[k].count_u; i++) { // i ä»£è¡¨ U æ–¹å‘ç´¢å¼•
+
+            // å†…å±‚ resize ä¸º V çš„æ•°é‡ == Cols
+            MeshVertex[i].resize(surfaces[k].count_v);
+
+            for (int j = 0; j < surfaces[k].count_v; j++) { // j ä»£è¡¨ V æ–¹å‘ç´¢å¼•
+
+                // ç´¢å¼•è®¡ç®—ï¼ši * stride + offset
+                // å­˜å‚¨æ–¹å¼ï¼šè¡Œä¼˜å…ˆï¼Œæ‰€ä»¥æ­¥é•¿æ˜¯ count_v
+                int flatIndex = i * surfaces[k].count_v + j;
+
+                MeshVertex[i][j] = surfaces[k].control_points[flatIndex];
+            }
+        }
+
+        this->surfaceControlRender[k].Initial(vertexShaderPath, whiteFragmentShaderPath, MeshVertex);
+
+
+        Vertices.clear();
+        OffsetVertex.clear();
+
+        Vertices.resize(1);
+        OffsetVertex.resize(1);
+
+        Vertices[0].resize(1);
+        OffsetVertex[0].resize(1);
+
+        double up, vp;
+        up = 0.5;
+        vp = 0.5;
+
+        glm::vec3 tmp = surfaces[k].Evaluate(up, vp);
+
+        //tinynurbs::array2<glm::vec<3, double>> res = tinynurbs::surfaceDerivatives(surfaces[k], 1, up, vp);
+
+        auto res = surfaces[k].Derivatives(up, vp, 1);
+
+        glm::vec3 tmp1 = res[1];  //uæ–¹å‘å¯¼æ•°
+        double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
+        tmp1.x = tmp1.x / length;
+        tmp1.y = tmp1.y / length;
+        tmp1.z = tmp1.z / length;
+        glm::vec3 tmp2; //ä¿å­˜å»¶ä¼¸åçš„æ•°æ®ç‚¹
+        double len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
+        tmp2.x = tmp.x - tmp1.x * len;
+        tmp2.y = tmp.y - tmp1.y * len;
+        tmp2.z = tmp.z - tmp1.z * len;
+        Vertices[0][0] = tmp;
+        OffsetVertex[0][0] = tmp2;
+
+        this->UsurfaceDerivateRender[k].Initial(vertexShaderPath, blueFragmentShaderPath, Vertices, OffsetVertex);
+
+        tmp1 = res[2];  //væ–¹å‘å¯¼æ•°
+        length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
+        tmp1.x = tmp1.x / length;
+        tmp1.y = tmp1.y / length;
+        tmp1.z = tmp1.z / length;
+        len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
+        tmp2.x = tmp.x - tmp1.x * len;
+        tmp2.y = tmp.y - tmp1.y * len;
+        tmp2.z = tmp.z - tmp1.z * len;
+        Vertices[0][0] = tmp;
+        OffsetVertex[0][0] = tmp2;
+        this->VsurfaceDerivateRender[k].Initial(vertexShaderPath, redFragmentShaderPath, Vertices, OffsetVertex);
+
+        
+        tmp1 = surfaces[k].GetNormal(up, vp);
+        length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
+        tmp1.x = tmp1.x / length;
+        tmp1.y = tmp1.y / length;
+        tmp1.z = tmp1.z / length;
+        len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
+        tmp2.x = tmp.x + tmp1.x * len;
+        tmp2.y = tmp.y + tmp1.y * len;
+        tmp2.z = tmp.z + tmp1.z * len;
+        Vertices[0][0] = tmp;
+        OffsetVertex[0][0] = tmp2;
+
+        this->normalRender[k].Initial(vertexShaderPath, greenFragmentShaderPath, Vertices, OffsetVertex);
+
+    }
+
+
+    this->curveRender.resize(curves.size());
+    this->curveDerivateRender.resize(curves.size());
+    this->curveControlPointLineRender.resize(curves.size());
+
+    for (int k = 0; k < this->curveRender.size(); k++) {
+        double u, delta;
+        vector<glm::vec3> crvvertex;
+        crvvertex.resize(1000);
+        u = 0;
+        delta = 1.0 / (3000 / 3 - 1);
+        for (int i = 0; i < 3000 / 3; i++) {
+            glm::vec3 tmp = curves[k].Evaluate(u);// tinynurbs::curvePoint(curves[k], u);
+
+            crvvertex[i] = tmp;
+            u += delta;
+        }
+        this->curveRender[k].Initial(vertexShaderPath, whiteFragmentShaderPath, crvvertex);
+
+        vector<glm::vec3> crvcontrol_points;
+        for (int i = 0; i < curves[k].control_points.size(); i++) {
+            crvcontrol_points.push_back(curves[k].control_points[i]);
+        }
+
+        this->curveControlPointLineRender[k].Initial(vertexShaderPath, greenFragmentShaderPath, crvcontrol_points);
+
+
+        double p = 0.5;
+        vector<vector<glm::vec3>> Vertices;
+        vector<vector<glm::vec3>> OffsetVertex;
+
+        glm::vec3 tmp = curves[k].Evaluate(p);// tinynurbs::curvePoint(curves[k], p);
+
+        std::vector<glm::dvec3> derivateData = curves[k].Derivatives(p, 1);// tinynurbs::curveDerivatives(curves[k], 1, p);
+
+        glm::vec3 tmp1 = derivateData[1];  //æ›²çº¿ä¸€ç‚¹çš„å¯¼æ•°è¿ç®—ç»“æœ
+        double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
+        tmp1.x = tmp1.x / length;
+        tmp1.y = tmp1.y / length;
+        tmp1.z = tmp1.z / length;
+        glm::vec3 tmp2; //ä¿å­˜å»¶ä¼¸åçš„æ•°æ®ç‚¹
+        double len = 1; //ç”¨æ¥å»¶ä¼¸çš„
+        tmp2.x = tmp.x - tmp1.x * len;
+        tmp2.y = tmp.y - tmp1.y * len;
+        tmp2.z = tmp.z - tmp1.z * len;
+
+
+        Vertices.resize(1);
+        OffsetVertex.resize(1);
+
+        Vertices[0].push_back(tmp);
+        OffsetVertex[0].push_back(tmp2);
+
+        this->curveDerivateRender[k].Initial(vertexShaderPath, redFragmentShaderPath, Vertices, OffsetVertex);
+
+    }
+
+    // initialize IMGUI
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+
+    ImGui::StyleColorsLight();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 450");
+    io.Fonts->AddFontFromFileTTF(imguiFontPath, 32.0f);
+
+}
+
+void GLProgram::run(vector<MyNurbs::RationalCurve> curves, vector<MyNurbs::RationalSurface> surfaces) {
+
+
+    ImGuiIO& io = ImGui::GetIO();
+    // imgui state
+    bool show_grid = false;
+    bool show_tangent = false;
+
+    bool show_normal = false;
+    float tangent_u = 0.5f, tangent_v = 0.5f;
+    bool show_control_mesh = false;
+
+    bool show_shade_suf = false;
+
+
+    bool show_curves = false;
+    bool show_curves_derivate = false;
+    float curves_derivate_u = 0.5f;
+    bool show_curve_control_points = false;
+
+    bool show_knot_insertion = false;
+    bool show_knot_removal = false;
+    bool show_degree_elevation = false;
+    bool show_degree_reduction = false;
+
+
+    // main loop
+    while (!glfwWindowShouldClose(this->window)) {
+
+        // per-frame time logic
+        float currTime = glfwGetTime();
+        this->deltaTime = currTime - this->prevTime;
+        this->prevTime = currTime;
+
+
+        // input
+        enableControl = (!io.WantCaptureMouse && !io.WantCaptureKeyboard);
+
+        // input
+        processInput();
+
+        glClearColor(this->clearColor.r, this->clearColor.g, this->clearColor.b, this->clearColor.alpha);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // --- imgui
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Settings");
+        ImGui::Checkbox("show grid", &show_grid);
+        ImGui::Checkbox("show tangent", &show_tangent);
+        if (show_tangent || show_normal) {
+            ImGui::SliderFloat("u##1", &tangent_u, 0.0f, 1.0f);
+            ImGui::SliderFloat("v##1", &tangent_v, 0.0f, 1.0f);
+        }
+        ImGui::Checkbox("show normal", &show_normal);
+
+        ImGui::Checkbox("show shade surface", &show_shade_suf);
+
+        ImGui::Checkbox("show control mesh", &show_control_mesh);
+
+        ImGui::Checkbox("show curves", &show_curves);
+
+        ImGui::Checkbox("show curves derivate", &show_curves_derivate);
+
+        ImGui::Checkbox("show curve control points line", &show_curve_control_points);
+
+        if (show_curves_derivate) {
+            ImGui::SliderFloat("u##2", &curves_derivate_u, 0.0f, 1.0f);
+        }
+
+        /*
+        ImGui::Checkbox("show control mesh", &show_control_mesh);
+        ImGui::Checkbox("show knot insertion", &show_knot_insertion);
+        ImGui::Checkbox("show knot removal", &show_knot_removal);
+        ImGui::Checkbox("show degree elevation", &show_degree_elevation);
+        ImGui::Checkbox("show degree reduction", &show_degree_reduction);
+        */
+
+        ImGui::End();
+
+        //Draw Surfaces
+        for (int k = 0; k < this->surfaceRender.size(); k++) {
+
+            vector<vector<glm::vec3>> Vertices;
+            vector<vector<glm::vec3>> OffsetVertex;
+            Vertices.resize(1);
+            OffsetVertex.resize(1);
+
+            Vertices[0].resize(1);
+            OffsetVertex[0].resize(1);
+
+            double up, vp;
+            up = tangent_u;
+            vp = tangent_v;
+
+            glm::vec3 tmp = surfaces[k].Evaluate(up, vp);
+
+            //tinynurbs::array2<glm::vec<3, double>> res = tinynurbs::surfaceDerivatives(surfaces[k], 1, up, vp);
+            auto res = surfaces[k].Derivatives(up, vp, 1);
+
+            glm::vec3 tmp1 = res[1];
+            double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
+            tmp1.x = tmp1.x / length;
+            tmp1.y = tmp1.y / length;
+            tmp1.z = tmp1.z / length;
+            glm::vec3 tmp2; //ä¿å­˜å»¶ä¼¸åçš„æ•°æ®ç‚¹
+            double len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
+            tmp2.x = tmp.x - tmp1.x * len;
+            tmp2.y = tmp.y - tmp1.y * len;
+            tmp2.z = tmp.z - tmp1.z * len;
+            Vertices[0][0] = tmp;
+            OffsetVertex[0][0] = tmp2;
+            this->UsurfaceDerivateRender[k].Initial(vertexShaderPath, blueFragmentShaderPath, Vertices, OffsetVertex);
+            tmp1 = res[2];
+            length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
+            tmp1.x = tmp1.x / length;
+            tmp1.y = tmp1.y / length;
+            tmp1.z = tmp1.z / length;
+            len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
+            tmp2.x = tmp.x - tmp1.x * len;
+            tmp2.y = tmp.y - tmp1.y * len;
+            tmp2.z = tmp.z - tmp1.z * len;
+            Vertices[0][0] = tmp;
+            OffsetVertex[0][0] = tmp2;
+            this->VsurfaceDerivateRender[k].Initial(vertexShaderPath, redFragmentShaderPath, Vertices, OffsetVertex);
+            if (show_tangent) {
+                this->UsurfaceDerivateRender[k].Draw(camera, modelMatrix, lightPos, windowWidth, windowHeight);
+                this->VsurfaceDerivateRender[k].Draw(camera, modelMatrix, lightPos, windowWidth, windowHeight);
+            }
+
+            tmp1 = surfaces[k].GetNormal(up, vp);
+            length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
+            tmp1.x = tmp1.x / length;
+            tmp1.y = tmp1.y / length;
+            tmp1.z = tmp1.z / length;
+            len = 0.2; //ç”¨æ¥å»¶ä¼¸çš„
+            tmp2.x = tmp.x + tmp1.x * len;
+            tmp2.y = tmp.y + tmp1.y * len;
+            tmp2.z = tmp.z + tmp1.z * len;
+            Vertices[0][0] = tmp;
+            OffsetVertex[0][0] = tmp2;
+            this->normalRender[k].Initial(vertexShaderPath, greenFragmentShaderPath, Vertices, OffsetVertex);
+            if (show_normal)
+                this->normalRender[k].Draw(camera, modelMatrix, lightPos, windowWidth, windowHeight);
+
+            if (show_shade_suf)
+                this->surfaceRender[k].Draw(camera, modelMatrix, lightPos, windowWidth, windowHeight);
+        }
+        //Draw Curves
+        for (int k = 0; k < this->curveRender.size(); k++) {
+
+            if (show_curves)
+                this->curveRender[k].Draw(camera, modelMatrix, lightPos, windowWidth, windowHeight);
+            if (show_curve_control_points)
+                this->curveControlPointLineRender[k].Draw(camera, modelMatrix, lightPos, windowWidth, windowHeight);
+
+
+            if (show_curves_derivate) {
+                double p = curves_derivate_u;
+                vector<vector<glm::vec3>> Vertices;
+                vector<vector<glm::vec3>> OffsetVertex;
+
+                glm::vec3 tmp = curves[k].Evaluate(p);
+
+                std::vector<glm::dvec3> derivateData = curves[k].Derivatives(p, 1);
+                glm::vec3 tmp1 = derivateData[1];
+
+                double length = sqrt(pow(tmp1.x, 2) + pow(tmp1.y, 2) + pow(tmp1.z, 2)); //ç”¨æ¥å•ä½åŒ–çš„
+
+                tmp1.x = tmp1.x / length;
+                tmp1.y = tmp1.y / length;
+                tmp1.z = tmp1.z / length;
+
+                glm::vec3 tmp2; //ä¿å­˜å»¶ä¼¸åçš„æ•°æ®ç‚¹
+
+                double len = 1; //ç”¨æ¥å»¶ä¼¸çš„
+                tmp2.x = tmp.x - tmp1.x * len;
+                tmp2.y = tmp.y - tmp1.y * len;
+                tmp2.z = tmp.z - tmp1.z * len;
+
+
+                Vertices.resize(1);
+                OffsetVertex.resize(1);
+
+                Vertices[0].push_back(tmp);
+                OffsetVertex[0].push_back(tmp2);
+
+                this->curveDerivateRender[k].Initial(vertexShaderPath, redFragmentShaderPath, Vertices, OffsetVertex);
+                this->curveDerivateRender[k].Draw(camera, modelMatrix, lightPos, windowWidth, windowHeight);
+            }
+
+
+        }
+        //Draw Mesh
+        for (int k = 0; k < this->surfaceRender.size(); k++) {
+            if (show_grid)
+                this->meshRender[k].Draw(camera, modelMatrix, lightPos, windowWidth, windowHeight);
+            if (show_control_mesh)
+                this->surfaceControlRender[k].Draw(camera, modelMatrix, lightPos, windowWidth, windowHeight);
+        }
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        // check and call events and swap buffers
+        glfwSwapBuffers((this->window));
+        glfwPollEvents();
+    }
+}
+
 
 
 void GLProgram::cleanup(void) {

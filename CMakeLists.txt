@@ -1,9 +1,14 @@
 cmake_minimum_required (VERSION 3.16)
 project ("project")
 
+add_definitions(-DNOMINMAX)
+if(MSVC)
+    add_compile_options(/DNOMINMAX)
+endif()
+
 file(GLOB SRCS "./src/*.cpp" "./src/*.c" "./imgui/*.cpp" "./imgui/backends/*.cpp")
 add_executable(project ${SRCS} "include/MyNurbs.h" "src/MyNurbs.cpp")
-target_include_directories(project PRIVATE "./include" "./imgui" "./imgui/backends")
+target_include_directories(project PRIVATE "./include" "./include/eigen" "./imgui" "./imgui/backends")
 if(LINUX)
     target_link_libraries(project dl GL glfw)
 else()
