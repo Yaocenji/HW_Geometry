@@ -1,6 +1,10 @@
 #include "../include/GLProgram.h"
 #include "MyNurbs.h"
 #include <string>
+#include <random>
+#include <iomanip>
+#include <numeric>
+#include <fstream>
 
 #define WINDOW_WIDTH 1600
 #define WINDOW_HEIGHT 1200
@@ -12,6 +16,153 @@ Camera GLProgram::camera;
 bool GLProgram::mousePressed = false;
 double GLProgram::prevMouseX, GLProgram::prevMouseY;
 glm::mat4 GLProgram::modelMatrix = glm::mat4(1.0f);
+
+
+
+// 辅助函数：生成随机点 (基于正弦波加噪声，保证曲线比较平滑好看)
+std::vector<glm::dvec3> GenerateRandomPoints(int count, double scale, double noiseLevel) {
+    std::vector<glm::dvec3> points;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> noise(-noiseLevel, noiseLevel);
+
+    for (int i = 0; i < count; ++i) {
+        double t = (double)i / (count - 1) * 10.0; // x范围 0 到 10
+        double x = t * scale;
+        // y = sin(x) + random
+        double y = std::sin(t) * scale * 2.0 + noise(gen);
+        // z 稍微波动一下
+        double z = noise(gen) * 2.0;
+
+        points.push_back(glm::dvec3(x, y, 5.0 + z));
+    }
+    return points;
+}
+
+// 辅助函数：平移曲线控制点 
+void TranslateCurve(MyNurbs::RationalCurve* curve, glm::dvec3 offset) {
+    if (!curve) return;
+    for (auto& p : curve->control_points) {
+        p += offset;
+    }
+}
+
+// 测试函数：生成、评估、排版
+void GenerateAndAnalyzeCurves(std::vector<MyNurbs::RationalCurve>& outCurves) {
+    using namespace MyNurbs;
+
+    // Part 1: 统计评估 (500+ Sets) & 导出 CSV
+    int numTests = 500;
+    int pointsCount = 18; // 题目要求至少15个点
+    int integrationSteps = 100; // 优化计算速度
+
+    // 打开 CSV 文件准备写入
+    std::ofstream csvFile("energy_data.csv");
+    if (!csvFile.is_open()) {
+        std::cerr << "Error: Could not open energy_data.csv for writing!" << std::endl;
+        return;
+    }
+
+    // 写入 CSV 表头
+    // 格式：ID, Uniform_Stretch, Uniform_Bending, Chord_Stretch, Chord_Bending, ...
+    csvFile << "TestID,"
+        << "Uniform_Stretch,Uniform_Bending,"
+        << "Chord_Stretch,Chord_Bending,"
+        << "Centripetal_Stretch,Centripetal_Bending,"
+        << "Universal_Stretch,Universal_Bending\n";
+
+    std::cout << "Running assessment on " << numTests << " random datasets..." << std::endl;
+    std::cout << "Exporting data to 'energy_data.csv'..." << std::endl;
+    std::cout << "Progress: 0/" << numTests << std::flush;
+
+    // 累加器（用于最后算平均值）
+    double totalStretch[4] = { 0 };
+    double totalBending[4] = { 0 };
+
+    RationalCurve::InterpolateMethod methods[4] = {
+        RationalCurve::Uniform,
+        RationalCurve::ChordLength,
+        RationalCurve::Centripetal,
+        RationalCurve::Universal
+    };
+    std::string names[4] = { "Uniform", "Chord Length", "Centripetal", "Universal" };
+
+    for (int i = 0; i < numTests; i++) {
+        // 进度条
+        if (i % 10 == 0) {
+            std::cout << "\rProgress: " << i << "/" << numTests << "   " << std::flush;
+        }
+
+        // 1. 生成一组随机点
+        auto pts = GenerateRandomPoints(pointsCount, 1.0, 0.5);
+
+        // 2. 写入当前测试ID
+        csvFile << i << ",";
+
+        // 3. 对该组点应用 4 种方法
+        for (int m = 0; m < 4; m++) {
+            RationalCurve* curve = nullptr;
+            double sE = 0.0;
+            double bE = 0.0;
+
+            // 尝试插值
+            if (RationalCurve::Interpolate(methods[m], 3, pts, curve)) {
+                // 计算能量
+                sE = curve->stretchEnergy(integrationSteps);
+                bE = curve->bendingEnergy(integrationSteps);
+                delete curve;
+            }
+
+            // 累加到总和（用于控制台平均值）
+            totalStretch[m] += sE;
+            totalBending[m] += bE;
+
+            // 写入 CSV (当前方法的 Stretch 和 Bending)
+            csvFile << sE << "," << bE;
+
+            // 如果不是最后一个方法，加逗号
+            if (m < 3) csvFile << ",";
+        }
+        // 换行，开始下一组数据
+        csvFile << "\n";
+    }
+
+    csvFile.close(); // 关闭文件
+    std::cout << "\rProgress: " << numTests << "/" << numTests << " (Done!)" << std::endl;
+    std::cout << "Data saved to 'energy_data.csv'." << std::endl;
+
+    // 打印控制台汇总报表
+    std::cout << "\n=============================================================\n";
+    std::cout << "  Performance Assessment (Average over " << numTests << " runs)\n";
+    std::cout << "=============================================================\n";
+    std::cout << std::left << std::setw(20) << "Method"
+        << std::setw(20) << "Avg Stretch Energy"
+        << std::setw(20) << "Avg Bending Energy" << std::endl;
+    std::cout << "-------------------------------------------------------------\n";
+
+    for (int m = 0; m < 4; m++) {
+        std::cout << std::left << std::setw(20) << names[m]
+            << std::setw(20) << (totalStretch[m] / numTests)
+            << std::setw(20) << (totalBending[m] / numTests) << std::endl;
+    }
+    std::cout << "=============================================================\n\n";
+
+    // Part 2: 生成可视化曲线 (1 Set, Spatially Separated)
+    std::cout << "Generating visualization curves..." << std::endl;
+    auto vizPoints = GenerateRandomPoints(20, 1.5, 0.2);
+
+    for (int m = 0; m < 4; m++) {
+        RationalCurve* curve = nullptr;
+        RationalCurve::Interpolate(methods[m], 3, vizPoints, curve);
+        if (curve) {
+            double yOffset = m * 6.0;
+            TranslateCurve(curve, glm::dvec3(0, yOffset, 0));
+            outCurves.push_back(*curve);
+            delete curve;
+        }
+    }
+    std::cout << "Visualization curves generated." << std::endl;
+}
 
 int main() {
     GLProgram program;
@@ -310,10 +461,15 @@ int main() {
     MySurfaces.push_back(*mysrf3);
 
 
+
+    std::vector<MyNurbs::RationalCurve> testCurves;
+    GenerateAndAnalyzeCurves(testCurves);
+
+
     //program.init(curves, surfaces);
-    program.init(MyCurves, MySurfaces);
+    program.init(testCurves, MySurfaces);
     program.setClearColor(0.05f, 0.18f, 0.25f, 1.0f);
-    program.run(MyCurves, MySurfaces);
+    program.run(testCurves, MySurfaces);
     program.cleanup();
     return 0;
 }
